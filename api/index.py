@@ -74,11 +74,14 @@ def verify_clerk_token(token: str):
         print(f"[ERROR] Token verification failed: {e}", file=sys.stderr)
         return None
 
-SSE_HEADERS = {
-    "Cache-Control": "no-cache",
-    "X-Accel-Buffering": "no",
-}
 
+SSE_HEADERS = {
+    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0",
+    "X-Accel-Buffering": "no",
+    "Vary": "*",
+}
 @app.get("/api/health")
 async def health_check():
     return {
