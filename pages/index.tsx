@@ -1,15 +1,29 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 
 export default function Home() {
   const [quote, setQuote] = useState<string>("...loading");
 
   useEffect(() => {
-    fetch("/api")
-      .then((res) => res.text())
-      .then(setQuote)
-      .catch((err) => setQuote("Error: " + err.message));
+    const evt = new EventSource("/api");
+    let buffer = "";
+
+    evt.onmessage = (e) => {
+      buffer += e.data;
+      setQuote(buffer);
+    };
+    evt.onerror = () => {
+      console.error("SSE error, closing");
+      evt.close();
+    };
+
+    return () => {
+      evt.close();
+    };
   }, []);
 
   return (
@@ -18,11 +32,13 @@ export default function Home() {
       <div
         className="w-full max-w-2xl p-6 bg-white dark:bg-gray-800 
                             border border-gray-300 dark:border-gray-600 
-                            rounded-lg shadow-sm"
+                            rounded-lg shadow-md"
       >
-        <p className="text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
-          {quote}
-        </p>
+        <div className="prose prose-gray dark:prose-invert max-w-none">
+          <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+            {quote}
+          </ReactMarkdown>
+        </div>
       </div>
     </main>
   );
