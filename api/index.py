@@ -9,12 +9,12 @@ load_dotenv()
 
 app = FastAPI()
 
-clerk_config = ClerkConfig(jwks_url=os.getenv("CLERK_JWKS_URL"))
-clerk_guard = ClerkHTTPBearer(clerk_config)
+#clerk_config = ClerkConfig(jwks_url=os.getenv("CLERK_JWKS_URL"))
+#clerk_guard = ClerkHTTPBearer(clerk_config)
 
 @app.get("/api")
-def quote(creds: HTTPAuthorizationCredentials = Depends(clerk_guard)):
-    user_id = creds.decoded["sub"]  # User ID from JWT
+def quote():
+    #user_id = creds.decoded["sub"]  # User ID from JWT
     # We now know which user is making the request!
     # You could use user_id to:
     # - Track usage per user
@@ -44,11 +44,10 @@ def quote(creds: HTTPAuthorizationCredentials = Depends(clerk_guard)):
     def event_stream():
         for chunk in stream:
             text = chunk.choices[0].delta.content
-            print(text)
             if text:
-                #lines = text.split("\n\n")
-                #for line in lines:
-                yield f"data: {text}\n\n"
-                #yield "\n\n"
+                lines = text.split("\n")
+                for line in lines:
+                    yield f"data: {line}\n"
+                yield "\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
