@@ -124,7 +124,8 @@ def quote(request: Request):
         stream = client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=prompt,
-            stream=True
+            stream=True,
+            temperature=0.9,
         )
     except Exception as e:
         print(f"[ERROR] Groq init failed: {e}", file=sys.stderr)
