@@ -15,7 +15,6 @@ export default function Product() {
     let buffer = "";
     (async () => {
       const jwt = await getToken();
-      console.log("jwt", jwt);
       if (!jwt) {
         setQuote("Authentication required");
         return;

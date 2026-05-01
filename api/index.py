@@ -44,6 +44,7 @@ def quote(creds: HTTPAuthorizationCredentials = Depends(clerk_guard)):
     def event_stream():
         for chunk in stream:
             text = chunk.choices[0].delta.content
+            print(text)
             if text:
                 #lines = text.split("\n\n")
                 #for line in lines:
