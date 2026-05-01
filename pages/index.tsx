@@ -27,17 +27,44 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="p-8 font-sans">
-      <h1 className="text-3xl font-bold mb-4">Daily Motivation</h1>
-      <div
-        className="w-full max-w-2xl p-6 bg-white dark:bg-gray-800 
-                            border border-gray-300 dark:border-gray-600 
-                            rounded-lg shadow-md"
-      >
-        <div className="prose prose-gray dark:prose-invert max-w-none">
-          <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
-            {quote}
-          </ReactMarkdown>
+    <main
+      className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 
+                         dark:from-gray-900 dark:to-gray-800"
+    >
+      <div className="container mx-auto px-4 py-12">
+        {/* Header */}
+        <header className="text-center mb-12">
+          <h1
+            className="text-5xl font-bold bg-gradient-to-r from-purple-600 
+                                   to-pink-600 bg-clip-text text-transparent mb-4"
+          >
+            Daily Motivation
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 text-lg">
+            Your daily dose of inspiration
+          </p>
+        </header>
+
+        {/* Content Card */}
+        <div className="max-w-3xl mx-auto">
+          <div
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 
+                                    backdrop-blur-lg bg-opacity-95"
+          >
+            {quote === "...loading" ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-pulse text-gray-400">
+                  Crafting your motivation...
+                </div>
+              </div>
+            ) : (
+              <div className="markdown-content text-gray-700 dark:text-gray-300">
+                <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+                  {quote}
+                </ReactMarkdown>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </main>

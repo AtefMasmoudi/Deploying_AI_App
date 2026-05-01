@@ -19,7 +19,7 @@ def quote():
     client = Groq(api_key=api_key)
     prompt = [{
         "role": "user",
-        "content": "Generate an inspiring, motivational quote for someone starting their day. Make it uplifting, empowering, and memorable."
+        "content": "Generate an inspiring, motivational quote for someone starting their day. Make it uplifting, empowering, and memorable. Formatted with the quote in italics and the author name below it. Use Markdown formatting."
     }]
     stream = client.chat.completions.create(
         model="llama-3.1-8b-instant",
