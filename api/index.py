@@ -145,7 +145,7 @@ def quote(request: Request):
                         else:
                             yield "data:  \n"
                     yield "\n"
-            yield "data: [DONE]\n\n"
+            #yield "data: [DONE]\n\n"
         except Exception as e:
             print(f"[ERROR] Stream error: {e}", file=sys.stderr)
             yield f"data: Error: Stream interrupted -- {str(e)}\n\n"
