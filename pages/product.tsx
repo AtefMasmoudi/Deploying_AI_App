@@ -8,31 +8,102 @@ import { useAuth } from "@clerk/nextjs";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 
 export default function Product() {
-  const { getToken } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const [quote, setQuote] = useState<string>("...loading");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let buffer = "";
-    (async () => {
-      const jwt = await getToken();
-      if (!jwt) {
-        setQuote("Authentication required");
-        return;
-      }
+    if (!isLoaded || !isSignedIn) return;
 
-      await fetchEventSource("/api", {
-        headers: { Authorization: `Bearer ${jwt}` },
-        onmessage(ev) {
-          buffer += ev.data;
-          setQuote(buffer);
-        },
-        onerror(err) {
-          console.error("SSE error:", err);
-          // Don't throw -- let it retry
-        },
-      });
+    let buffer = "";
+    let evtController: AbortController | null = null;
+
+    (async () => {
+      try {
+        const jwt = await getToken();
+        if (!jwt) {
+          setError("Authentication required. Please sign in.");
+          setQuote("");
+          return;
+        }
+
+        evtController = new AbortController();
+
+        await fetchEventSource("/api", {
+          headers: { Authorization: `Bearer ${jwt}` },
+          signal: evtController.signal,
+          async onopen(response) {
+            if (
+              response.ok &&
+              response.headers
+                .get("content-type")
+                ?.includes("text/event-stream")
+            ) {
+              setError(null);
+              return;
+            }
+            // Non-SSE response -- read body for error details
+            response.text().then((text) => {
+              setError(
+                `Server error (${response.status}): ${text.slice(0, 200)}`,
+              );
+            });
+          },
+          onmessage(ev) {
+            buffer += ev.data;
+            setQuote(buffer);
+          },
+          onerror(err) {
+            console.error("SSE error:", err);
+            setError("Connection error. Please refresh and try again.");
+            // Return undefined to let library retry
+            return undefined;
+          },
+          onclose() {
+            console.log("SSE connection closed");
+          },
+        });
+      } catch (err: any) {
+        setError(`Failed to connect: ${err.message}`);
+        setQuote("");
+      }
     })();
-  }, []); // Empty dependency array -- run once on mount
+
+    return () => {
+      if (evtController) evtController.abort();
+    };
+  }, [isLoaded, isSignedIn, getToken]);
+
+  if (!isLoaded) {
+    return (
+      <main
+        className="min-h-screen bg-gradient-to-br from-purple-50 
+                             to-pink-100 dark:from-gray-900 dark:to-gray-800"
+      >
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-pulse text-gray-400">Loading...</div>
+        </div>
+      </main>
+    );
+  }
+
+  if (!isSignedIn) {
+    return (
+      <main
+        className="min-h-screen bg-gradient-to-br from-purple-50 
+                             to-pink-100 dark:from-gray-900 dark:to-gray-800"
+      >
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">Please Sign In</h1>
+            <p className="text-gray-600">
+              You must be signed in to view your daily motivation.
+            </p>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main
@@ -54,13 +125,26 @@ export default function Product() {
           </p>
         </header>
 
+        {/* Error Display */}
+        {error && (
+          <div className="max-w-3xl mx-auto mb-6">
+            <div
+              className="bg-red-50 dark:bg-red-900/20 border 
+                                        border-red-200 dark:border-red-800 
+                                        rounded-lg p-4 text-red-700 dark:text-red-300"
+            >
+              {error}
+            </div>
+          </div>
+        )}
+
         {/* Content Card */}
         <div className="max-w-3xl mx-auto">
           <div
             className="bg-white dark:bg-gray-800 rounded-2xl 
                                     shadow-xl p-8 backdrop-blur-lg bg-opacity-95"
           >
-            {quote === "...loading" ? (
+            {quote === "...loading" && !error ? (
               <div className="flex items-center justify-center py-12">
                 <div className="animate-pulse text-gray-400">
                   Crafting your motivation...
