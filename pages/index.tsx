@@ -6,10 +6,7 @@ import { SignInButton, UserButton, useUser } from "@clerk/nextjs";
 export default function Home() {
   const { isSignedIn, isLoaded } = useUser();
 
-  //if (!isLoaded) return null; // avoid flicker
-  if (!isLoaded) {
-    return <div className="text-white p-10">Loading authentication...</div>;
-  }
+  if (!isLoaded) return null; // avoid flicker
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
