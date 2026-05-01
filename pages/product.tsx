@@ -13,26 +13,37 @@ export default function Product() {
 
   useEffect(() => {
     let buffer = "";
-    (async () => {
-      const jwt = await getToken();
-      if (!jwt) {
-        setIdea("Authentication required");
-        return;
-      }
 
-      await fetchEventSource("/api", {
-        headers: { Authorization: `Bearer ${jwt}` },
-        onmessage(ev) {
-          buffer += ev.data;
-          setIdea(buffer);
-        },
-        onerror(err) {
-          console.error("SSE error:", err);
-          // Don't throw - let it retry
-        },
-      });
+    (async () => {
+      try {
+        const jwt = await getToken();
+
+        if (!jwt) {
+          setIdea("Authentication required");
+          return;
+        }
+
+        await fetchEventSource("http://localhost:8000/api", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
+
+          onmessage(ev) {
+            buffer += ev.data;
+            setIdea(buffer);
+          },
+
+          onerror(err) {
+            console.error("SSE error:", err);
+          },
+        });
+      } catch (err) {
+        console.error("Request failed:", err);
+        setIdea("Failed to connect to server");
+      }
     })();
-  }, []); // Empty dependency array - run once on mount
+  }, []);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
@@ -47,9 +58,9 @@ export default function Product() {
           </p>
         </header>
 
-        {/* Content Card */}
+        {/* Content */}
         <div className="max-w-3xl mx-auto">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 backdrop-blur-lg bg-opacity-95">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
             {idea === "…loading" ? (
               <div className="flex items-center justify-center py-12">
                 <div className="animate-pulse text-gray-400">
@@ -57,7 +68,7 @@ export default function Product() {
                 </div>
               </div>
             ) : (
-              <div className="markdown-content text-gray-700 dark:text-gray-300">
+              <div className="text-gray-700 dark:text-gray-300">
                 <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
                   {idea}
                 </ReactMarkdown>
