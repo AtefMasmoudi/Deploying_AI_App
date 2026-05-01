@@ -16,22 +16,19 @@ export default function Product() {
     if (!isLoaded || !isSignedIn) return;
 
     let buffer = "";
-    let evtController: AbortController | null = null;
+    const controller = new AbortController();
 
     (async () => {
       try {
-        const jwt = await getToken();
+        const jwt = await getToken({ template: "backend" });
         if (!jwt) {
-          setError("Authentication required. Please sign in.");
-          setQuote("");
+          setError("Authentication required");
           return;
         }
 
-        evtController = new AbortController();
-
         await fetchEventSource("/api", {
           headers: { Authorization: `Bearer ${jwt}` },
-          signal: evtController.signal,
+          signal: controller.signal,
           async onopen(response) {
             if (
               response.ok &&
@@ -42,12 +39,7 @@ export default function Product() {
               setError(null);
               return;
             }
-            // Non-SSE response -- read body for error details
-            response.text().then((text) => {
-              setError(
-                `Server error (${response.status}): ${text.slice(0, 200)}`,
-              );
-            });
+            setError(`Server returned ${response.status}. Check Vercel logs.`);
           },
           onmessage(ev) {
             buffer += ev.data;
@@ -55,8 +47,7 @@ export default function Product() {
           },
           onerror(err) {
             console.error("SSE error:", err);
-            setError("Connection error. Please refresh and try again.");
-            // Return undefined to let library retry
+            setError("Connection error. Please refresh.");
             return undefined;
           },
           onclose() {
@@ -64,21 +55,18 @@ export default function Product() {
           },
         });
       } catch (err: any) {
-        setError(`Failed to connect: ${err.message}`);
-        setQuote("");
+        setError(`Failed: ${err.message}`);
       }
     })();
 
-    return () => {
-      if (evtController) evtController.abort();
-    };
+    return () => controller.abort();
   }, [isLoaded, isSignedIn, getToken]);
 
   if (!isLoaded) {
     return (
       <main
-        className="min-h-screen bg-gradient-to-br from-purple-50 
-                             to-pink-100 dark:from-gray-900 dark:to-gray-800"
+        className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100
+                       dark:from-gray-900 dark:to-gray-800"
       >
         <div className="flex items-center justify-center min-h-screen">
           <div className="animate-pulse text-gray-400">Loading...</div>
@@ -90,14 +78,14 @@ export default function Product() {
   if (!isSignedIn) {
     return (
       <main
-        className="min-h-screen bg-gradient-to-br from-purple-50 
-                             to-pink-100 dark:from-gray-900 dark:to-gray-800"
+        className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100
+                       dark:from-gray-900 dark:to-gray-800"
       >
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">Please Sign In</h1>
             <p className="text-gray-600">
-              You must be signed in to view your daily motivation.
+              Sign in to get your daily motivation.
             </p>
           </div>
         </div>
@@ -107,16 +95,14 @@ export default function Product() {
 
   return (
     <main
-      className="min-h-screen bg-gradient-to-br from-purple-50 
-                         to-pink-100 dark:from-gray-900 dark:to-gray-800"
+      className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100
+                     dark:from-gray-900 dark:to-gray-800"
     >
       <div className="container mx-auto px-4 py-12">
-        {/* Header */}
         <header className="text-center mb-12">
           <h1
-            className="text-5xl font-bold bg-gradient-to-r 
-                                   from-purple-600 to-pink-600 bg-clip-text 
-                                   text-transparent mb-4"
+            className="text-5xl font-bold bg-gradient-to-r from-purple-600
+                         to-pink-600 bg-clip-text text-transparent mb-4"
           >
             Daily Motivation
           </h1>
@@ -125,24 +111,22 @@ export default function Product() {
           </p>
         </header>
 
-        {/* Error Display */}
         {error && (
           <div className="max-w-3xl mx-auto mb-6">
             <div
-              className="bg-red-50 dark:bg-red-900/20 border 
-                                        border-red-200 dark:border-red-800 
-                                        rounded-lg p-4 text-red-700 dark:text-red-300"
+              className="bg-red-50 dark:bg-red-900/20 border border-red-200
+                            dark:border-red-800 rounded-lg p-4 text-red-700
+                            dark:text-red-300"
             >
               {error}
             </div>
           </div>
         )}
 
-        {/* Content Card */}
         <div className="max-w-3xl mx-auto">
           <div
-            className="bg-white dark:bg-gray-800 rounded-2xl 
-                                    shadow-xl p-8 backdrop-blur-lg bg-opacity-95"
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8
+                          backdrop-blur-lg bg-opacity-95"
           >
             {quote === "...loading" && !error ? (
               <div className="flex items-center justify-center py-12">
@@ -151,10 +135,7 @@ export default function Product() {
                 </div>
               </div>
             ) : (
-              <div
-                className="markdown-content text-gray-700 
-                                            dark:text-gray-300"
-              >
+              <div className="markdown-content text-gray-700 dark:text-gray-300">
                 <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
                   {quote}
                 </ReactMarkdown>
