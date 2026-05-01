@@ -1,21 +1,15 @@
 import os
-from fastapi import FastAPI,Depends  
+from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from groq import Groq
 from dotenv import load_dotenv
-from fastapi_clerk_auth import ClerkConfig, ClerkHTTPBearer, HTTPAuthorizationCredentials  # type: ignore
-
 
 load_dotenv()
 
 app = FastAPI()
 
-clerk_config = ClerkConfig(jwks_url=os.getenv("CLERK_JWKS_URL"))
-clerk_guard = ClerkHTTPBearer(clerk_config)
-
 @app.get("/api")
-def quote(creds: HTTPAuthorizationCredentials = Depends(clerk_guard)):
-    user_id = creds.decoded["sub"]
+def quote():
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         def error_stream():
