@@ -54,7 +54,8 @@ export default function Home() {
             className="text-xl text-gray-600 dark:text-gray-400 mb-12
                         max-w-2xl mx-auto"
           >
-            AI-powered motivational quotes delivered in real-time
+            Get your daily dose of AI-powered motivation delivered in real-time.
+            Start your day inspired.
           </p>
           <Show when="signed-out">
             <SignInButton mode="modal">
