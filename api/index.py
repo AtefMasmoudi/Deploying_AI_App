@@ -28,24 +28,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-"""
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=os.getenv("CORS_ORIGINS", "*").split(","),
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-
-# ── SSE helper ─────────────────────────────────────────────────────────
-SSE_HEADERS = {
-    "Cache-Control": "no-cache, no-transform",
-    "X-Accel-Buffering": "no",
-}
-
-"""
 async def quote_stream():
     client: Groq = app.state.groq
     if not client:
@@ -78,5 +60,4 @@ async def quote(ucreds: HTTPAuthorizationCredentials = Depends(clerk_guard)):
     return StreamingResponse(
         quote_stream(),
         media_type="text/event-stream",
-       # headers=SSE_HEADERS,
     )
