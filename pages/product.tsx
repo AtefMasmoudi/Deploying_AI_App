@@ -135,7 +135,7 @@ export default function Product() {
                 </div>
               </div>
             ) : (
-              <div className="mprose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
+              <div className="markdown-content prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
                 <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
                   {quote}
                 </ReactMarkdown>
