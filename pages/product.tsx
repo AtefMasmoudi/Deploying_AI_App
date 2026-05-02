@@ -157,8 +157,8 @@ export default function Product() {
       <div className="absolute top-4 right-4">
         <UserButton showName={true} />
       </div>
-
-      {hasAnyPlan ? <MotivationGenerator /> : <SubscriptionFallback />}
+      <MotivationGenerator />
+      {/* {hasAnyPlan ? <MotivationGenerator /> : <SubscriptionFallback />} */}
     </main>
   );
 }
