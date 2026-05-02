@@ -77,7 +77,7 @@ async def quote_stream(user_id: str):
             model="llama-3.1-8b-instant",
             messages=[{
                 "role": "user",
-                "content": "Generate an inspiring, motivational quote for someone starting their day. Make it uplifting, empowering, and memorable. Only one quote in italics and the author name below it in boldface. Generate the quote in Markdown formatting with no additional caracters."
+                "content": "Generate a short inspiring and motivational text for someone wants to learn AI production engineering with Atef MASMOUDI. Make it uplifting, empowering, and memorable. Generate the text in Markdown formatting with no additional caracters."
             }],
             stream=True
         )
