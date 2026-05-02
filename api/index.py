@@ -16,15 +16,8 @@ load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 CLERK_JWKS_URL = os.getenv("CLERK_JWKS_URL")
 
-# ── Lifespan: initialize heavy resources once ──────────────────────────
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    app.state.groq = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
-    app.state.jwks = {}
-    yield
-    # cleanup (if needed)
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
