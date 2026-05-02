@@ -79,8 +79,7 @@ async def quote_stream(user_id: str):
                 "role": "user",
                 "content": "Generate an inspiring, motivational quote for someone starting their day. Make it uplifting, empowering, and memorable. Formatted with the quote in italics and the author name below it. Use Markdown formatting."
             }],
-            stream=True,
-            temperature=0.9,
+            stream=True
         )
         for chunk in stream:
             if text := chunk.choices[0].delta.content:
