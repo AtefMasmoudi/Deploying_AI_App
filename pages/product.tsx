@@ -4,17 +4,15 @@ import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser, PricingTable, UserButton } from "@clerk/nextjs";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 
-export default function Product() {
-  const { getToken, isLoaded, isSignedIn } = useAuth();
+function MotivationGenerator() {
+  const { getToken } = useAuth();
   const [quote, setQuote] = useState<string>("...loading");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isLoaded || !isSignedIn) return;
-
     let buffer = "";
     const controller = new AbortController();
 
@@ -39,7 +37,7 @@ export default function Product() {
               setError(null);
               return;
             }
-            setError(`Server returned ${response.status}. Check Vercel logs.`);
+            setError(`Server returned ${response.status}. Check logs.`);
           },
           onmessage(ev) {
             buffer += ev.data;
@@ -60,14 +58,79 @@ export default function Product() {
     })();
 
     return () => controller.abort();
-  }, [isLoaded, isSignedIn, getToken]);
+  }, [getToken]);
+
+  return (
+    <div className="container mx-auto px-4 py-12">
+      <header className="text-center mb-12">
+        <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+          Daily Motivation
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 text-lg">
+          Your daily dose of inspiration
+        </p>
+      </header>
+
+      {error && (
+        <div className="max-w-3xl mx-auto mb-6">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-300">
+            {error}
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 backdrop-blur-lg bg-opacity-95">
+          {quote === "...loading" && !error ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-pulse text-gray-400">
+                Crafting your motivation...
+              </div>
+            </div>
+          ) : (
+            <div className="markdown-content text-gray-700 dark:text-gray-300">
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+                {quote}
+              </ReactMarkdown>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Subscription Fallback ─────────────────────────────────────────────
+function SubscriptionFallback() {
+  return (
+    <div className="container mx-auto px-4 py-12">
+      <header className="text-center mb-12">
+        <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+          Choose Your Plan
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 text-lg mb-8">
+          Unlock unlimited AI-powered Daily Motivation
+        </p>
+      </header>
+      <div className="max-w-4xl mx-auto">
+        <PricingTable />
+      </div>
+    </div>
+  );
+}
+
+// ── Main Product Page ─────────────────────────────────────────────────
+export default function Product() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const { user } = useUser();
+
+  // Check subscription status from user metadata
+  const hasSubscription =
+    user?.publicMetadata?.subscription === "premium_subscription";
 
   if (!isLoaded) {
     return (
-      <main
-        className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100
-                       dark:from-gray-900 dark:to-gray-800"
-      >
+      <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
         <div className="flex items-center justify-center min-h-screen">
           <div className="animate-pulse text-gray-400">Loading...</div>
         </div>
@@ -77,16 +140,11 @@ export default function Product() {
 
   if (!isSignedIn) {
     return (
-      <main
-        className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100
-                       dark:from-gray-900 dark:to-gray-800"
-      >
+      <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">Please Sign In</h1>
-            <p className="text-gray-600">
-              Sign in to get your daily motivation.
-            </p>
+            <p className="text-gray-600">Sign in to access your motivation.</p>
           </div>
         </div>
       </main>
@@ -94,56 +152,12 @@ export default function Product() {
   }
 
   return (
-    <main
-      className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100
-                     dark:from-gray-900 dark:to-gray-800"
-    >
-      <div className="container mx-auto px-4 py-12">
-        <header className="text-center mb-12">
-          <h1
-            className="text-5xl font-bold bg-gradient-to-r from-purple-600
-                         to-pink-600 bg-clip-text text-transparent mb-4"
-          >
-            Daily Motivation
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 text-lg">
-            Your daily dose of inspiration
-          </p>
-        </header>
-
-        {error && (
-          <div className="max-w-3xl mx-auto mb-6">
-            <div
-              className="bg-red-50 dark:bg-red-900/20 border border-red-200
-                            dark:border-red-800 rounded-lg p-4 text-red-700
-                            dark:text-red-300"
-            >
-              {error}
-            </div>
-          </div>
-        )}
-
-        <div className="max-w-3xl mx-auto">
-          <div
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8
-                          backdrop-blur-lg bg-opacity-95"
-          >
-            {quote === "...loading" && !error ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-pulse text-gray-400">
-                  Crafting your motivation...
-                </div>
-              </div>
-            ) : (
-              <div className="markdown-content text-gray-700 dark:text-gray-300">
-                <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
-                  {quote}
-                </ReactMarkdown>
-              </div>
-            )}
-          </div>
-        </div>
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="absolute top-4 right-4">
+        <UserButton showName={true} />
       </div>
+
+      {hasSubscription ? <MotivationGenerator /> : <SubscriptionFallback />}
     </main>
   );
 }
