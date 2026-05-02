@@ -124,9 +124,10 @@ export default function Product() {
   const { isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
 
-  // Check subscription status from user metadata
-  const hasSubscription =
-    user?.publicMetadata?.subscription === "premium_subscription";
+  // Accept BOTH free_user and premium_subscription as valid plans
+  const userPlan = user?.publicMetadata?.subscription as string | undefined;
+  const hasAnyPlan =
+    userPlan === "free_user" || userPlan === "premium_subscription";
 
   if (!isLoaded) {
     return (
@@ -157,7 +158,7 @@ export default function Product() {
         <UserButton showName={true} />
       </div>
 
-      {hasSubscription ? <MotivationGenerator /> : <SubscriptionFallback />}
+      {hasAnyPlan ? <MotivationGenerator /> : <SubscriptionFallback />}
     </main>
   );
 }
