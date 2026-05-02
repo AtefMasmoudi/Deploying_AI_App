@@ -18,7 +18,16 @@ clerk_config = ClerkConfig(jwks_url=os.getenv("CLERK_JWKS_URL"))
 clerk_guard = ClerkHTTPBearer(clerk_config)
 
 
-app = FastAPI()
+# ── Lifespan: initialize heavy resources once ──────────────────────────
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.groq = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+    app.state.jwks = {}
+    yield
+    # cleanup (if needed)
+
+app = FastAPI(lifespan=lifespan)
+
 
 app.add_middleware(
     CORSMiddleware,
