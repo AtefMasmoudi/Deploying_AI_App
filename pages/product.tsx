@@ -135,10 +135,12 @@ export default function Product() {
                 </div>
               </div>
             ) : (
-              <div className="markdown-content prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
-                <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
-                  {quote}
-                </ReactMarkdown>
+              <div className="w-full max-w-2xl p-6 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-md">
+                <div className="prose prose-gray dark:prose-invert max-w-none">
+                  <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+                    {quote}
+                  </ReactMarkdown>
+                </div>
               </div>
             )}
           </div>
