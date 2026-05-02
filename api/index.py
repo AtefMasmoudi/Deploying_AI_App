@@ -77,7 +77,7 @@ async def quote_stream(user_id: str):
             model="llama-3.1-8b-instant",
             messages=[{
                 "role": "user",
-                "content": "Reply with an inspiring motivational quote in Markdown."
+                "content": "Generate an inspiring, motivational quote for someone starting their day. Make it uplifting, empowering, and memorable. Formatted with the quote in italics and the author name below it. Use Markdown formatting."
             }],
             stream=True,
             temperature=0.9,
@@ -85,7 +85,7 @@ async def quote_stream(user_id: str):
         for chunk in stream:
             if text := chunk.choices[0].delta.content:
                 yield f"data: {text}\n\n"
-        yield "data: [DONE]\n\n"
+        #yield "data: [DONE]\n\n"
     except Exception as exc:
         yield f"data: Error: {exc}\n\n"
 
