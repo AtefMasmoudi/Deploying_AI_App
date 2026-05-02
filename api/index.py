@@ -82,9 +82,14 @@ async def quote_stream(user_id: str):
             stream=True
         )
         for chunk in stream:
-            if text := chunk.choices[0].delta.content:
-                yield f"data: {text}\n\n"
-        #yield "data: [DONE]\n\n"
+            text = chunk.choices[0].delta.content
+            if text:
+                lines = text.split("\n")
+                for line in lines[:-1]:
+                    yield f"data: {line}\n\n"
+                    yield "data: \n"
+                yield f"data: {lines[-1]}\n\n"
+        
     except Exception as exc:
         yield f"data: Error: {exc}\n\n"
 
